@@ -18,7 +18,8 @@ class LLMResult:
 
 
 def generate_llm_response(chat_messages, tools=None, tool_choice=None, response_format=None):
-    config = _provider_config(use_openai2=response_format is not None)
+    use_openai = response_format is not None
+    config = _provider_config(use_openai2=use_openai)
     missing = [name for name, value in config["required"].items() if not value]
     provider_host = _provider_host(config["base_url"])
     if missing:
@@ -43,6 +44,8 @@ def generate_llm_response(chat_messages, tools=None, tool_choice=None, response_
         "max_tokens": settings.OPENAI_MAX_TOKENS,
         # "extra_body": { "enable_thinking": False }
     }
+    if (not use_openai):
+        request["extra_body"] = { "enable_thinking": False }
     if tools is not None:
         request["tools"] = tools
         request["tool_choice"] = tool_choice or "auto"
