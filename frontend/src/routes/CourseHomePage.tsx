@@ -16,7 +16,7 @@ export default function CourseHomePage() {
   return (
     <Stack>
       <Title>课程首页</Title>
-      <Text c="dimmed">基于参考文档构建的授权教学靶场：角色扮演、指令操纵、编码混淆、RAG 注入、恶意 Schema、Agent 工具滥用。</Text>
+      <Text c="dimmed">教学靶场：角色扮演、指令操纵、编码混淆、RAG 注入、恶意 Schema、Agent 工具滥用。</Text>
       <Alert color="blue" title="安全说明">所有训练目标均为无害 flag、假文档、假用户和模拟工具调用；不会执行真实外部动作。</Alert>
       {error && <Alert color="red">加载失败：{(error as Error).message}</Alert>}
       {isLoading ? <Skeleton height={220} /> : (

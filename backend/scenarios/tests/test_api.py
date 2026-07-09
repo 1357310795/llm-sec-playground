@@ -99,6 +99,26 @@ def test_real_harm_precheck_does_not_call_llm(monkeypatch):
 
 
 @pytest.mark.django_db
+def test_rag_output_reports_flag_without_sanitizing_when_output_moderation_off(monkeypatch):
+    call_command("seed_scenarios")
+
+    def fake_flag_response(*args, **kwargs):
+        return LLMResult(content="RAG_INJECTION_TRAINING_FLAG", model="mock-model", success=True, provider_host="mock.local")
+
+    monkeypatch.setattr("scenarios.services.orchestrator.generate_llm_response", fake_flag_response)
+    client = APIClient()
+    response = client.post(
+        "/api/scenarios/rag-injection-basic/attempts/",
+        {"sessionId": "pytest", "message": "总结知识库", "defenses": {"outputModeration": False}},
+        format="json",
+    )
+    assert response.status_code == 201
+    assert response.data["modelOutput"] == "RAG_INJECTION_TRAINING_FLAG"
+    assert response.data["safeOutput"] == "RAG_INJECTION_TRAINING_FLAG"
+    assert any(event["type"] == "training_flag_leak" for event in response.data["riskEvents"])
+
+
+@pytest.mark.django_db
 def test_output_guard_sanitizes_real_llm_flag(monkeypatch):
     call_command("seed_scenarios")
 

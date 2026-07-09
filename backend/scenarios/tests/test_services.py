@@ -3,6 +3,7 @@ import pytest
 from scenarios.services.llm_client import generate_llm_response
 from scenarios.services.normalizer import normalize_text
 from scenarios.services.orchestrator import build_chat_messages, response_format_for_schema
+from scenarios.services.rag_sandbox import retrieve_documents
 from scenarios.services.schema_analyzer import analyze_schema
 from scenarios.services.scoring import score_attempt
 from scenarios.services.tool_policy import agent_tool_definitions, execute_agent_tool_call, plan_tool_calls
@@ -33,6 +34,39 @@ def test_response_format_wraps_constrained_decoding_schema():
         "type": "json_schema",
         "json_schema": {"name": "cda_malicious_schema_response", "schema": schema},
     }
+
+
+@pytest.mark.django_db
+def test_rag_documents_report_training_flag_risk():
+    from django.core.management import call_command
+    from scenarios.models import Scenario
+
+    call_command("seed_scenarios")
+    scenario = Scenario.objects.get(id="rag-injection-basic")
+    docs, events = retrieve_documents(
+        scenario,
+        "总结知识库",
+        [{"title": "污染文档", "content": "普通内容 RAG_INJECTION_TRAINING_FLAG"}],
+        {},
+    )
+    assert any(event["type"] == "training_flag_leak" and event["source"] == "rag_doc" for event in events)
+    assert docs[-1]["isPoisoned"] is False
+
+
+@pytest.mark.django_db
+def test_rag_documents_mark_poisoned_only_when_instruction_data_separation_enabled():
+    from django.core.management import call_command
+    from scenarios.models import Scenario
+
+    call_command("seed_scenarios")
+    scenario = Scenario.objects.get(id="rag-injection-basic")
+    docs, _ = retrieve_documents(
+        scenario,
+        "总结知识库",
+        [{"title": "污染文档", "content": "普通内容 RAG_INJECTION_TRAINING_FLAG"}],
+        {"instructionDataSeparation": True},
+    )
+    assert docs[-1]["isPoisoned"] is True
 
 
 def test_tool_policy_blocks_external_email():

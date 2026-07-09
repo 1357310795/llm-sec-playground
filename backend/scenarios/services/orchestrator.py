@@ -76,9 +76,10 @@ def run_attempt(scenario, payload):
 
     safe_output = output
     output_events = []
-    if defenses.get("outputModeration"):
+    should_detect_output_flags = defenses.get("outputModeration") or scenario.category == "indirect_prompt_injection"
+    if should_detect_output_flags:
         output_events = detect_flag_leak(raw_output)
-        if output_events:
+        if defenses.get("outputModeration") and output_events:
             safe_output = "[输出已拦截] 真实 LLM 尝试输出训练敏感标记，已替换为教学提示。"
             output = safe_output
     risk_events.extend(output_events)
