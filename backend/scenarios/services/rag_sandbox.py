@@ -1,5 +1,5 @@
 from scenarios.models import ScenarioDocument
-from scenarios.services.guards import detect_external_instruction, event
+from scenarios.services.guards import detect_external_instruction, detect_flag_leak, event
 
 
 def retrieve_documents(scenario, message, submitted_documents, defenses):

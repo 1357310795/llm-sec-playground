@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import status
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import serializers, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -8,18 +9,37 @@ from .serializers import AttemptSerializer, ReplaySerializer, ScenarioDetailSeri
 from .services.orchestrator import run_attempt
 
 
+@extend_schema(responses=ScenarioListSerializer(many=True))
 @api_view(["GET"])
 def scenario_list(request):
     scenarios = Scenario.objects.filter(is_active=True).select_related("default_defenses")
     return Response(ScenarioListSerializer(scenarios, many=True).data)
 
 
+@extend_schema(responses=ScenarioDetailSerializer)
 @api_view(["GET"])
 def scenario_detail(request, scenario_id):
     scenario = get_object_or_404(Scenario.objects.select_related("default_defenses"), id=scenario_id, is_active=True)
     return Response(ScenarioDetailSerializer(scenario).data)
 
 
+@extend_schema(methods=["GET"], responses=AttemptSerializer(many=True))
+@extend_schema(
+    methods=["POST"],
+    request=inline_serializer(
+        name="AttemptRequest",
+        fields={
+            "sessionId": serializers.CharField(required=False),
+            "message": serializers.CharField(required=False),
+            "messages": serializers.ListField(child=serializers.DictField(), required=False),
+            "schema": serializers.JSONField(required=False),
+            "documents": serializers.ListField(child=serializers.DictField(), required=False),
+            "defenseOverrides": serializers.JSONField(required=False),
+            "toolCalls": serializers.ListField(child=serializers.DictField(), required=False),
+        },
+    ),
+    responses=AttemptSerializer,
+)
 @api_view(["GET", "POST"])
 def scenario_attempts(request, scenario_id):
     scenario = get_object_or_404(Scenario.objects.select_related("default_defenses"), id=scenario_id, is_active=True)
@@ -32,12 +52,14 @@ def scenario_attempts(request, scenario_id):
     return Response(AttemptSerializer(attempt).data, status=status.HTTP_201_CREATED)
 
 
+@extend_schema(responses=ReplaySerializer)
 @api_view(["GET"])
 def attempt_replay(request, attempt_id):
     attempt = get_object_or_404(Attempt.objects.prefetch_related("risk_events"), id=attempt_id)
     return Response(ReplaySerializer(attempt).data)
 
 
+@extend_schema(request=ScenarioDocumentSerializer, responses=ScenarioDocumentSerializer)
 @api_view(["POST"])
 def rag_documents(request, scenario_id):
     scenario = get_object_or_404(Scenario, id=scenario_id, category="indirect_prompt_injection")
@@ -47,6 +69,17 @@ def rag_documents(request, scenario_id):
     return Response(ScenarioDocumentSerializer(document).data, status=status.HTTP_201_CREATED)
 
 
+@extend_schema(
+    request=inline_serializer(name="ToolConfirmationRequest", fields={"decision": serializers.CharField(required=False)}),
+    responses=inline_serializer(
+        name="ToolConfirmationResponse",
+        fields={
+            "attemptId": serializers.UUIDField(),
+            "status": serializers.CharField(),
+            "timeline": serializers.JSONField(),
+        },
+    ),
+)
 @api_view(["POST"])
 def confirm_tool_call(request, attempt_id):
     attempt = get_object_or_404(Attempt, id=attempt_id)

@@ -34,6 +34,7 @@ def analyze_schema(schema, defenses):
     sanitized = schema
     if defenses.get("promptInjectionDetection") or defenses.get("outputModeration"):
         sanitized = _sanitize_schema(schema)
+        print(sanitized)
         if events:
             events.append(event("schema_sanitized", "medium", "schema", "已在模拟链路中清理风险 schema 描述、默认值或枚举。", "sanitized"))
 

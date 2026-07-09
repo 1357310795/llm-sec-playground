@@ -1,6 +1,6 @@
 import { Textarea } from '@mantine/core';
 
-const example = `{
+export const DEFAULT_SCHEMA_TEXT = `{
   "type": "object",
   "properties": {
     "status": {
@@ -15,10 +15,10 @@ export default function SchemaEditorPanel({ value, onChange }: { value: string; 
     <Textarea
       label="JSON Schema"
       description="Schema 本身也是训练攻击面：description、enum、default、pattern 都会被分析。"
-      minRows={10}
-      value={value || example}
+      rows={16}
+      value={value}
       onChange={(event) => onChange(event.currentTarget.value)}
-      styles={{ input: { fontFamily: 'monospace' } }}
+      styles={{ input: { fontFamily: 'monospace', resize: 'vertical' } }}
     />
   );
 }

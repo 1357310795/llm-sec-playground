@@ -83,6 +83,7 @@ class Attempt(models.Model):
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, related_name="attempts")
     session_id = models.CharField(max_length=120, default="demo-session")
     messages = models.JSONField(default=list)
+    chat_messages = models.JSONField(default=list)
     submitted_text = models.TextField(blank=True)
     submitted_schema = models.JSONField(null=True, blank=True)
     submitted_documents = models.JSONField(default=list)

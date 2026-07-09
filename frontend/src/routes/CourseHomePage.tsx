@@ -1,10 +1,17 @@
 import { Alert, SimpleGrid, Skeleton, Stack, Text, Title } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { getScenarios } from '../api/scenarios';
 import ScenarioCard from '../components/ScenarioCard';
 
+const difficultyOrder = { easy: 0, medium: 1, hard: 2 };
+
 export default function CourseHomePage() {
   const { data, isLoading, error } = useQuery({ queryKey: ['scenarios'], queryFn: getScenarios });
+  const sortedScenarios = useMemo(
+    () => [...(data ?? [])].sort((a, b) => difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty]),
+    [data],
+  );
 
   return (
     <Stack>
@@ -14,7 +21,7 @@ export default function CourseHomePage() {
       {error && <Alert color="red">加载失败：{(error as Error).message}</Alert>}
       {isLoading ? <Skeleton height={220} /> : (
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
-          {(data ?? []).map((scenario) => <ScenarioCard key={scenario.id} scenario={scenario} />)}
+          {sortedScenarios.map((scenario) => <ScenarioCard key={scenario.id} scenario={scenario} />)}
         </SimpleGrid>
       )}
     </Stack>

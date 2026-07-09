@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
+    "drf_spectacular",
     "scenarios",
 ]
 
@@ -77,11 +78,21 @@ CORS_ALLOW_ALL_ORIGINS = DEBUG
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "LLM Security Training Range API",
+    "DESCRIPTION": "Educational LLM security scenario API",
+    "VERSION": "0.1.0",
 }
 
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "").strip()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "").strip()
+OPENAI2_BASE_URL = os.getenv("OPENAI2_BASE_URL", "").strip()
+OPENAI2_API_KEY = os.getenv("OPENAI2_API_KEY", "").strip()
+OPENAI2_MODEL = os.getenv("OPENAI2_MODEL", "").strip()
 OPENAI_TIMEOUT_SECONDS = float(os.getenv("OPENAI_TIMEOUT_SECONDS", "30"))
 OPENAI_MAX_TOKENS = int(os.getenv("OPENAI_MAX_TOKENS", "700"))
 OPENAI_TEMPERATURE = float(os.getenv("OPENAI_TEMPERATURE", "0.2"))
