@@ -80,5 +80,5 @@ def detect_flag_leak(text, source="output"):
     events = []
     for flag in TRAINING_FLAGS:
         if flag in (text or ""):
-            events.append(event("training_flag_leak", "critical", source, "输出包含训练敏感标记，已触发输出侧检测。", "sanitized", flag))
+            events.append(event("training_flag_leak", "critical", source, "输出包含训练敏感标记，已触发输出侧检测。", "flagged", flag))
     return events

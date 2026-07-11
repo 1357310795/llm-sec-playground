@@ -82,6 +82,7 @@ def run_attempt(scenario, payload):
         if defenses.get("outputModeration") and output_events:
             safe_output = "[输出已拦截] 真实 LLM 尝试输出训练敏感标记，已替换为教学提示。"
             output = safe_output
+            output_events = [{**event, "action": "sanitized"} for event in output_events]
     risk_events.extend(output_events)
     timeline.append({"phase": "output_guard", "riskEvents": output_events, "safeOutput": safe_output})
 

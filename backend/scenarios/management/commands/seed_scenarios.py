@@ -12,9 +12,9 @@ class Command(BaseCommand):
             scenario, _ = Scenario.objects.update_or_create(id=item["id"], defaults=item)
             DefenseProfile.objects.update_or_create(scenario=scenario, defaults={})
 
-        for raw in DOCUMENTS:
-            item = raw.copy()
-            scenario = Scenario.objects.get(id=item.pop("scenario_id"))
-            ScenarioDocument.objects.update_or_create(scenario=scenario, title=item["title"], defaults=item)
+        # for raw in DOCUMENTS:
+        #     item = raw.copy()
+        #     scenario = Scenario.objects.get(id=item.pop("scenario_id"))
+        #     ScenarioDocument.objects.update_or_create(scenario=scenario, title=item["title"], defaults=item)
 
         self.stdout.write(self.style.SUCCESS(f"Seeded {len(SCENARIOS)} scenarios and {len(DOCUMENTS)} documents."))

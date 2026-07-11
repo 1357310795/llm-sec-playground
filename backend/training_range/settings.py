@@ -30,6 +30,7 @@ def env_path(name, default):
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-training-range-secret")
 DEBUG = env_bool("DJANGO_DEBUG", True)
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", ["*"] if DEBUG else [])
+DISABLE_CSRF = env_bool("DJANGO_DISABLE_CSRF", False)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -54,6 +55,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+if DISABLE_CSRF:
+    MIDDLEWARE.remove("django.middleware.csrf.CsrfViewMiddleware")
 
 ROOT_URLCONF = "training_range.urls"
 
@@ -108,6 +111,10 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_AUTHENTICATION_CLASSES": [] if DISABLE_CSRF else [
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.BasicAuthentication",
+    ],
 }
 
 SPECTACULAR_SETTINGS = {
